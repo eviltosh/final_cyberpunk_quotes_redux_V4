@@ -17,29 +17,35 @@ st.set_page_config(page_title="Cyberpunk Stock Tracker", page_icon="💹", layou
 #  Uses: /videos/cyberpunk_light.mp4
 # =========================================================
 
-import streamlit.components.v1 as components
+import base64
+from pathlib import Path
+import streamlit as st
 
-VIDEO_URL = "https://github.com/eviltosh/final_cyberpunk_quotes_redux_V4/releases/download/v1.0/cyberpunk_light.mp4"
+# --- LOAD VIDEO FROM FILE ---
+video_path = Path("videos/cyberpunk_light.mp4")
+video_bytes = video_path.read_bytes()
+encoded_video = base64.b64encode(video_bytes).decode()
 
-components.html(
+# --- PLAY AS BACKGROUND (GUARANTEED WORKING METHOD) ---
+st.markdown(
     f"""
-    <video autoplay loop muted playsinline id="bg-video"
+    <video autoplay muted loop playsinline
         style="
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             z-index: -1;
             opacity: 0.25;
         ">
-        <source src="{VIDEO_URL}" type="video/mp4">
+        <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
     </video>
     """,
-    height=0,
-    width=0,
+    unsafe_allow_html=True,
 )
+
 
 
 
@@ -249,6 +255,7 @@ for ticker in tickers:
         st.markdown("<hr style='border: 1px solid #00f5ff; opacity: 0.3;'>", unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Could not load info for {ticker}: {e}")
+
 
 
 
