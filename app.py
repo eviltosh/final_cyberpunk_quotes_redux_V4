@@ -18,6 +18,8 @@ st.set_page_config(page_title="Cyberpunk Stock Tracker", page_icon="💹", layou
 # =========================================================
 VIDEO_URL = "https://raw.githubusercontent.com/eviltosh/final_cyberpunk_quotes_redux_V4/main/videos/cyberpunk_light.mp4"
 
+
+
 st.markdown(
     f"""
     <video autoplay loop muted playsinline id="bg-video"
@@ -36,6 +38,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 
@@ -239,6 +242,7 @@ for ticker in tickers:
         st.markdown("<hr style='border: 1px solid #00f5ff; opacity: 0.3;'>", unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Could not load info for {ticker}: {e}")
+
 
 
 
