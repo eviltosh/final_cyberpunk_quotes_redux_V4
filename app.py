@@ -241,3 +241,4 @@ for ticker in tickers:
         st.error(f"Could not load info for {ticker}: {e}")
 
 
+
