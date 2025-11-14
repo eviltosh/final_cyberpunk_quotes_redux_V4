@@ -37,7 +37,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-)
+
 
 # --- Sidebar Controls ---
 st.sidebar.header("⚙️ Controls")
@@ -239,4 +239,5 @@ for ticker in tickers:
         st.markdown("<hr style='border: 1px solid #00f5ff; opacity: 0.3;'>", unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Could not load info for {ticker}: {e}")
+
 
