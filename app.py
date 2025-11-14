@@ -1,4 +1,30 @@
 import streamlit as st
+import streamlit.components.v1 as components
+
+# =========================================================
+# UNIVERSAL TRANSPARENCY PATCH (removes ALL Streamlit layers)
+# =========================================================
+st.markdown("""
+<style>
+
+html, body, [data-testid="stBody"], [data-testid="stApp"],
+[data-testid="stAppViewContainer"], [data-testid="stMain"],
+section.main, .block-container,
+[class*="css"], [class^="css"], [data-testid="stHeader"], [data-testid="stToolbar"] {
+    background: transparent !important;
+    backdrop-filter: none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# =========================================================
+# Cyberpunk Embedded CSS (your file looks at this later)
+# =========================================================
+
+
+
 import yfinance as yf
 import requests
 from io import BytesIO
@@ -7,26 +33,22 @@ import datetime
 import time
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+from pathlib import Path
+import base64
 
 # --- Streamlit page setup ---
 st.set_page_config(page_title="Cyberpunk Stock Tracker", page_icon="💹", layout="wide")
 
+
 # =========================================================
-#  FULLSCREEN VIDEO BACKGROUND (STREAMLIT CLOUD SAFE)
-#  Uses: /videos/cyberpunk_light.mp4
+# 🔥 FULLSCREEN VIDEO BACKGROUND
+# (Loaded from /videos/cyberpunk_light.mp4 as base64)
 # =========================================================
 
-import base64
-from pathlib import Path
-import streamlit as st
-
-# --- LOAD VIDEO FROM FILE ---
 video_path = Path("videos/cyberpunk_light.mp4")
 video_bytes = video_path.read_bytes()
 encoded_video = base64.b64encode(video_bytes).decode()
 
-# --- PLAY AS BACKGROUND (GUARANTEED WORKING METHOD) ---
 st.markdown(
     f"""
     <video autoplay muted loop playsinline
@@ -34,11 +56,11 @@ st.markdown(
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             object-fit: cover;
             z-index: -1;
-            opacity: 0.25;
+            opacity: 1.0; /* change if needed */
         ">
         <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
     </video>
@@ -47,30 +69,48 @@ st.markdown(
 )
 
 
+# =========================================================
+# OPTIONAL FALLBACK VIDEO (GitHub Release URL)
+# =========================================================
+
+components.html(
+    f"""
+    <video autoplay loop muted playsinline
+        style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 1.0;
+        ">
+        <source src="https://github.com/eviltosh/final_cyberpunk_quotes_redux_V4/releases/download/v1.0/cyberpunk_light.mp4" type="video/mp4">
+    </video>
+    """,
+    height=0,
+    width=0
+)
 
 
 
+# =========================================================
+# SIDEBAR CONTROLS
+# =========================================================
 
-
-
-
-
-# --- Sidebar Controls ---
 st.sidebar.header("⚙️ Controls")
 tickers_input = st.sidebar.text_input("Enter stock tickers (comma-separated):", "AAPL, TSLA, NVDA")
 period = st.sidebar.selectbox("Select time range:", ["1mo", "3mo", "6mo", "1y", "2y", "5y", "max"])
 refresh_rate = st.sidebar.slider("Auto-refresh interval (seconds):", 10, 300, 60)
 
-# --- Finnhub API key input (user-provided) ---
 st.sidebar.subheader("🔑 API Keys")
 finnhub_api = st.sidebar.text_input(
     "Finnhub API key",
     value="",
     type="password",
-    help="Enter your Finnhub API key to enable company news (keeps hidden)."
 )
 
-# --- Background Image Controls ---
 st.sidebar.subheader("🌅 Chart Background")
 bg_choice = st.sidebar.selectbox(
     "Select Background Image:",
@@ -80,7 +120,6 @@ uploaded_bg = None
 if bg_choice == "Upload Your Own":
     uploaded_bg = st.sidebar.file_uploader("Upload a background image", type=["jpg", "jpeg", "png"])
 
-# --- Load Selected Background Image ---
 if uploaded_bg is not None:
     bg_image = Image.open(uploaded_bg)
 else:
@@ -94,21 +133,32 @@ else:
     except Exception:
         bg_image = None
 
-# --- Apply Cyberpunk CSS ---
+
+# =========================================================
+# CYBERPUNK STYLE SHEET
+# =========================================================
+
 with open("cyberpunk_style_embedded.css", "r", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# --- Centered Title Only (Dark Mode) ---
+
+# =========================================================
+# CENTERED TITLE
+# =========================================================
+
 st.markdown("""
 <div style='text-align:center;'>
     <h1 class='cyberpunk-title'>CYBERPUNK QUOTES</h1>
 </div>
 """, unsafe_allow_html=True)
 
-# --- Parse tickers ---
+
+# =========================================================
+# TICKERS
+# =========================================================
+
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
-# --- Auto-refresh setup ---
 if "last_refresh" not in st.session_state:
     st.session_state["last_refresh"] = time.time()
 else:
@@ -116,7 +166,11 @@ else:
         st.session_state["last_refresh"] = time.time()
         st.rerun()
 
-# --- Cached data functions ---
+
+# =========================================================
+# CACHED FUNCTIONS
+# =========================================================
+
 @st.cache_data(ttl=3600)
 def get_stock_data(ticker, period):
     return yf.Ticker(ticker).history(period=period)
@@ -142,7 +196,11 @@ def get_company_news(symbol, api_key):
     except Exception:
         return []
 
-# --- Main Dashboard ---
+
+# =========================================================
+# MAIN DASHBOARD LOOP
+# =========================================================
+
 for ticker in tickers:
     try:
         info = get_info_cached(ticker)
@@ -172,7 +230,7 @@ for ticker in tickers:
             st.markdown(f"### {info.get('shortName', ticker)}")
             st.caption(f"{info.get('sector', 'N/A')} | {info.get('industry', 'N/A')}")
 
-        # --- Cyberpunk Glow Chart (Always Dark Mode) ---
+        # Cyberpunk chart (matplotlib)
         import matplotlib.pyplot as plt
         import mplcyberpunk
         plt.style.use("cyberpunk")
@@ -190,7 +248,7 @@ for ticker in tickers:
         mplcyberpunk.add_glow_effects()
         st.pyplot(fig)
 
-        # --- Metrics ---
+        # Metrics
         col1, col2, col3, col4 = st.columns(4)
         price = info.get("currentPrice")
         cap = info.get("marketCap")
@@ -206,26 +264,9 @@ for ticker in tickers:
                 pct = (change / hist_5d["Close"].iloc[-2]) * 100
                 st.metric("Daily Change", f"${change:.2f}", f"{pct:.2f}%")
 
-        # --- Company Info ---
+        # Company Info expander
         summary = info.get("longBusinessSummary", "No company description available.")
         if summary and summary.strip():
-            st.markdown("""
-                <style>
-                div[data-testid="stExpander"] {
-                    border: 1px solid #00ffff !important;
-                    border-radius: 10px !important;
-                    box-shadow: 0 0 15px #00ffff80;
-                    background-color: rgba(0, 20, 30, 0.6) !important;
-                }
-                div[data-testid="stExpander"] > div:first-child {
-                    color: #00f5ff !important;
-                    font-weight: bold !important;
-                    font-size: 1rem !important;
-                    text-shadow: 0 0 8px #00ffff;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-
             with st.expander("📘 Company Info (click to expand)"):
                 st.write(summary)
         else:
@@ -233,7 +274,7 @@ for ticker in tickers:
 
         st.markdown("---")
 
-        # --- News ---
+        # News
         st.subheader(f"📰 {ticker} Recent News")
         if not finnhub_api:
             st.info("Enter your Finnhub API key in the sidebar to enable company news.")
@@ -253,13 +294,7 @@ for ticker in tickers:
                 st.info("No recent news available.")
 
         st.markdown("<hr style='border: 1px solid #00f5ff; opacity: 0.3;'>", unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Could not load info for {ticker}: {e}")
-
-
-
-
-
-
-
 
