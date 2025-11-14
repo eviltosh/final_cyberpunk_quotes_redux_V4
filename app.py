@@ -16,30 +16,27 @@ st.set_page_config(page_title="Cyberpunk Stock Tracker", page_icon="💹", layou
 #  FULLSCREEN VIDEO BACKGROUND (STREAMLIT CLOUD SAFE)
 #  Uses: /videos/cyberpunk_light.mp4
 # =========================================================
-st.markdown(
-    """
-    <video autoplay loop muted playsinline id="bg-video">
-        <source src="videos/cyberpunk_light.mp4" type="video/mp4">
-    </video>
+VIDEO_URL = "https://raw.githubusercontent.com/eviltosh/final_cyberpunk_quotes_redux_V4/main/videos/cyberpunk_light.mp4"
 
-    <style>
-        #bg-video {
+st.markdown(
+    f"""
+    <video autoplay loop muted playsinline id="bg-video"
+        style="
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             z-index: -1;
-            opacity: 0.25; /* Adjust brightness */
-        }
-        /* Ensures container backgrounds stay transparent so the video shows through */
-        .block-container {
-            background: transparent !important;
-        }
-    </style>
+            opacity: 0.25;
+        ">
+        <source src="{VIDEO_URL}" type="video/mp4">
+    </video>
     """,
     unsafe_allow_html=True
+)
+
 )
 
 # --- Sidebar Controls ---
@@ -242,3 +239,4 @@ for ticker in tickers:
         st.markdown("<hr style='border: 1px solid #00f5ff; opacity: 0.3;'>", unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Could not load info for {ticker}: {e}")
+
